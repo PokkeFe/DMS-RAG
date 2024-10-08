@@ -93,3 +93,7 @@ zipp==3.18.1
 jaydebeapi
 pymysql
 pymongo
+langchain
+langchain-community
+langchain-ibm
+langgraph

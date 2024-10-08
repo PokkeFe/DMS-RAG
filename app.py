@@ -53,6 +53,8 @@ from customTypes.texttosqlResponse import texttosqlResponse
 
 from customTypes.watsonchatRequest import LLMParams,Parameters,Moderations
 
+from llm import query as llm_query
+
 app = FastAPI()
 
 app.openapi_version = "3.0.2"
@@ -883,6 +885,10 @@ def watsonx(input, promptType, llm_params):
     response=generated_response['results'][0]['generated_text']
 
     return response
+
+@app.post("/langchain_test")
+async def langchain_test(query: str):
+    return llm_query(query)
 
 if __name__ == '__main__':
     if 'uvicorn' not in sys.argv[0]:
