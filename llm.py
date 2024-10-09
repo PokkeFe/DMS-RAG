@@ -81,6 +81,12 @@ def sqlgen_node(state: State) -> State:
 def sqlexec_node(state: State) -> State:
     return {}
 
+def search_knowledge_base(state: State) -> State:
+    return {}
+
+def general_response(state: State) -> State:
+    return {}
+
 def print_stream(stream):
     for s in stream:
         message = s["messages"][-1]
