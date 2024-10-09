@@ -1,20 +1,33 @@
-Instruction:Read the following text and assign a classification label as one of the following - rag, Text2SQL. If the question starts with How always set output label - rag
+Instruction: Read the following text and construct a JSON blob with the following structure:
+
+{{"response_method": method_type}}
+
+Possible method types are the following strings: "search_knowledge_base", "query_database", and "other"
+
+If the question asks how to accomplish a task, always choose "search_knowledge_base".
+
+Input: Hi, how's it going?
+{{"response_method": "other"}}
 
 Input: What is DMS+?
-Output: label: rag
+{{"response_method": "search_knowledge_base"}}
 
 Input: How to print in DMS?
-Output: label: rag
+{{"response_method": "search_knowledge_base"}}
+
+Input: a
+{{"response_method": "other"}}
 
 Input: How to order the battery?
-Output: label: rag
+{{"response_method": "search_knowledge_base"}}
 
 Input: What are the features of DMS?
-Output: label: rag
+{{"response_method": "search_knowledge_base"}}
 
 Input: what is the salary of barkele01 in the year 1985?
-Output: label: Text2SQL
+{{"response_method": "query_database"}}
 
 Input: What is the team id in which perryge01 played?
-Output: label: Text2SQL
+{{"response_method": "query_database"}}
 
+Input: {input}
