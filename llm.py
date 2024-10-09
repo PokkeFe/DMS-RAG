@@ -37,14 +37,43 @@ from pydantic import BaseModel, Field
 
 from db2_loader import get_db2_database
 
+import json
+
+
+MODEL_ID = 'ibm/granite-13b-chat-v2'
+parameters = {  
+    GenTextParamsMetaNames.DECODING_METHOD: "sample",  
+    GenTextParamsMetaNames.MAX_NEW_TOKENS: 100,  
+    GenTextParamsMetaNames.MIN_NEW_TOKENS: 1,  
+    GenTextParamsMetaNames.TEMPERATURE: 0.5,  
+    GenTextParamsMetaNames.TOP_K: 50,  
+    GenTextParamsMetaNames.TOP_P: 1,
+    GenTextParamsMetaNames.STOP_SEQUENCES: ["\n"]
+}   
+watsonx_llm = WatsonxLLM(  
+model_id="meta-llama/llama-3-2-90b-vision-instruct",  
+url= "https://us-south.ml.cloud.ibm.com",  
+apikey= os.environ.get("IBM_CLOUD_API_KEY"), 
+project_id=os.environ.get("WX_PROJECT_ID"),  
+params=parameters,  
+)
+key = os.environ.get("IBM_CLOUD_API_KEY")
+
+classify_prompt_template = PromptTemplate.from_file("promptClassify")
+
 # State definitions
 class State(TypedDict):
     user_input: str
     graph_output: str
 
+class InputState(TypedDict):
+    user_input: str
 
 def classify_node(state: State) -> State:
-    return {}
+
+    chain = classify_prompt_template | watsonx_llm | JsonOutputParser()
+    response: dict = chain.invoke({"input": state["user_input"]})
+    return {"graph_output": response["response_method"]}
 
 def sqlgen_node(state: State) -> State:
     return {}
@@ -60,28 +89,7 @@ def print_stream(stream):
         else:
             message.pretty_print()
 
-def query(q: str) -> str:
-
-    print 
-
-    MODEL_ID = 'ibm/granite-13b-chat-v2'
-    parameters = {  
-        GenTextParamsMetaNames.DECODING_METHOD: "sample",  
-        GenTextParamsMetaNames.MAX_NEW_TOKENS: 100,  
-        GenTextParamsMetaNames.MIN_NEW_TOKENS: 1,  
-        GenTextParamsMetaNames.TEMPERATURE: 0.5,  
-        GenTextParamsMetaNames.TOP_K: 50,  
-        GenTextParamsMetaNames.TOP_P: 1,
-        GenTextParamsMetaNames.STOP_SEQUENCES: ["\n"]
-    }   
-    watsonx_llm = WatsonxLLM(  
-    model_id="meta-llama/llama-3-2-90b-vision-instruct",  
-    url= "https://us-south.ml.cloud.ibm.com",  
-    apikey= os.environ.get("IBM_CLOUD_API_KEY"), 
-    project_id=os.environ.get("WX_PROJECT_ID"),  
-    params=parameters,  
-    )
-    key = os.environ.get("IBM_CLOUD_API_KEY")
+def query(user_input: str) -> str:
 
     # prompt_value = template.invoke({"topic": input})
 
@@ -104,7 +112,12 @@ def query(q: str) -> str:
 
     # return db.run(response)
 
-    prompt_template = PromptTemplate.from_file("promptClassify")
+    builder = StateGraph(State, input=InputState)
 
-    chain = prompt_template | watsonx_llm | JsonOutputParser()
-    return chain.invoke({"input": q})
+    builder.add_node("classify_node", classify_node)
+    builder.add_edge(START, "classify_node")
+    builder.add_edge("classify_node", END)
+
+    graph = builder.compile()
+    print(graph.get_graph().draw_ascii())
+    return graph.invoke({"user_input": user_input})
