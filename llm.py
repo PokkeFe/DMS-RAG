@@ -101,8 +101,8 @@ def query(user_input: str) -> str:
 
     # llm_chain = template | watsonx_llm
 
-    db = get_db2_database()
-    sql_chain = create_sql_query_chain(watsonx_llm, db)
+    # db = get_db2_database()
+    # sql_chain = create_sql_query_chain(watsonx_llm, db)
 
     # response = sql_chain.invoke({
     #     "question": q
