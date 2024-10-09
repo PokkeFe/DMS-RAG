@@ -1,24 +1,37 @@
 Instruction: You are a developer writing SQL queries given natural language questions. The database contains a table. The schema of the table with description of the attributes is given. Write the SQL query given a natural language statement.
 Here is the table.
 
-Database Table Name: DATAINGESTION_TEST_13MARCH
-Table Schema:THEHISTORYOFBASEBALL
-YEAR # The year in which they player was playing
-TEAM_ID # Team in which the player was playing
-LEAGUE_ID  # The League ID in which the player was playing for year
-PLAYER_ID # Player id of the player
-SALARY  # Salary of the player 
+Database Table Name: PARTS
+Table Schema:DMS
+ITEM	 #  Part or item Number
+NAME # Name of the Item or Parts or product
+DESCRIPTION	  # Description of the parts or product
+MANUFACTURER # Name of the manufacture who manufactured the parts or product
+PRICE  # Price of the parts or product
+IMAGE_URL # Image url or link to image of the parts	
+PRODUCT_DETAIL_URL	# Link to more descriptive detail of the products
+ATTRIBUTE_1 # Label of the grade
+ATTRIBUTE_1_FACET	# Rating of the parts or product
+ATTRIBUTE_2 # Type of the parts or product
+ATTRIBUTE_2_FACET # Description of the type of the parts or product
+ATTRIBUTE_3	# Label of the quantity of the product
+ATTRIBUTE_3_FACE # Size of the parts or product
 
 
 Input:
-How much is the salary of barkele01 in the year 1985?
+What is the grade of the MAG61788	?
 
 Output:
-select salary from thehistoryofbaseball.dataingestion_test_13MARCH where player_id = 'barkele01' and year = 1985;
-
+select ATTRIBUTE_1_FACET as Rating from DMS.PARTS where ITEM ='MAG61788';
 
 Input:
-What is the team id in which perryge01 played?
+What is the price of MAG61792?
 
 Output:
-select team_id, player_id, league_id from thehistoryofbaseball.dataingestion_test_13MARCH where player_id = 'perryge01' group by team_id;
+select price as price  from DMS.PARTS where ITEM ='MAG61792'
+
+Input:
+Show me the image of the part XO 30 QSD?;
+
+Output:
+select IMAGE_URL as link from  DMS.PARTS where ITEM ='XO 30 QSD?';
