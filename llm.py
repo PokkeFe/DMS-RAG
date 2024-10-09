@@ -76,16 +76,16 @@ def classify_node(state: State) -> State:
     return {"graph_output": response["response_method"]}
 
 def sqlgen_node(state: State) -> State:
-    return {}
+    return {"graph_output": state["graph_output"]}
 
 def sqlexec_node(state: State) -> State:
-    return {}
+    return {"graph_output": state["graph_output"]}
 
 def search_knowledge_base(state: State) -> State:
-    return {}
+    return {"graph_output": state["graph_output"]}
 
-def general_response(state: State) -> State:
-    return {}
+def general_response_node(state: State) -> State:
+    return {"graph_output": state["graph_output"]}
 
 def print_stream(stream):
     for s in stream:
@@ -94,6 +94,9 @@ def print_stream(stream):
             print(message)
         else:
             message.pretty_print()
+
+def classify_node_output_router(state: State) -> Literal["sqlgen_node", "search_knowledge_base", "general_response_node"]:
+    return "search_knowledge_base"
 
 def query(user_input: str) -> str:
 
@@ -121,8 +124,18 @@ def query(user_input: str) -> str:
     builder = StateGraph(State, input=InputState)
 
     builder.add_node("classify_node", classify_node)
+    builder.add_node("search_knowledge_base", search_knowledge_base)
+    builder.add_node("sqlgen_node", sqlgen_node)
+    builder.add_node("sqlexec_node", sqlexec_node)
+    builder.add_node("general_response_node", general_response_node)
+
     builder.add_edge(START, "classify_node")
-    builder.add_edge("classify_node", END)
+    builder.add_conditional_edges("classify_node", classify_node_output_router)
+
+    builder.add_edge("sqlgen_node", "sqlexec_node")
+    builder.add_edge("sqlexec_node", END)
+    builder.add_edge("search_knowledge_base", END)
+    builder.add_edge("general_response_node", END)
 
     graph = builder.compile()
     print(graph.get_graph().draw_ascii())
