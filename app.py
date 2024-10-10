@@ -50,6 +50,7 @@ from customTypes.watsonchatRequest import watsonchatRequest
 from customTypes.watsonchatResponse import watsonchatResponse
 from customTypes.texttosqlRequest import texttosqlRequest
 from customTypes.texttosqlResponse import texttosqlResponse
+from customTypes.langchainResponse import langchainResponse
 
 from customTypes.watsonchatRequest import LLMParams,Parameters,Moderations
 
@@ -887,8 +888,9 @@ def watsonx(input, promptType, llm_params):
     return response
 
 @app.post("/langchain_test")
-async def langchain_test(query: str):
-    return llm_query(query)
+async def langchain_test(query: str) -> langchainResponse:
+    text = llm_query(query)["graph_output"]
+    return langchainResponse(response=text)
 
 if __name__ == '__main__':
     if 'uvicorn' not in sys.argv[0]:
