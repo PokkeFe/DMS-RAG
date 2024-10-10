@@ -49,7 +49,7 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.vector_stores.elasticsearch import ElasticsearchStore
 from llama_index.core.vector_stores.types import MetadataFilters, ExactMatchFilter, FilterOperator, MetadataFilter
 
-from utils import create_sparse_vector_query_with_model, create_sparse_vector_query_with_model_and_filter
+from utils import create_sparse_vector_query_with_model, create_sparse_vector_query_with_model_and_filter, CustomWatsonX
 
 
 
@@ -81,12 +81,20 @@ wxd_creds = {
     "wxdurl": os.environ.get("WXD_URL")
 }
 
+wml_credentials = {
+    "url": os.environ.get("WX_URL"),
+    "apikey": os.environ.get("IBM_CLOUD_API_KEY")
+}
+
 async_es_client = AsyncElasticsearch(
     wxd_creds["wxdurl"],
     basic_auth=(wxd_creds["username"], wxd_creds["password"]),
     verify_certs=False,
     request_timeout=3600,
 )
+
+# Create a watsonx client cache for faster calls.
+custom_watsonx_cache = {}
 
 # State definitions
 class State(TypedDict):
@@ -116,13 +124,15 @@ def sqlexec_node(state: SQLGenState) -> State:
     return {"graph_output": str(result)}
 
 def search_knowledge_base(state: State) -> State:
-    question         = state["user_input"]
-    index_name       = ""
-    index_text_field = ""
-    es_model_name    = ""
-    model_text_field = ""
-    num_results      = 1
+    index_name       = "search-rag-llm-index"
+    index_text_field = "body_content_field"
+    es_model_name    = ".elser_model_2"
+    model_text_field = "ml.tokens"
+    num_results      = 2
     es_filters = None
+
+    Settings.llm = get_custom_watsonx("meta-llama/llama-3-2-90b-vision-instruct", {})
+    Settings.embed_model = None
 
     vector_store = ElasticsearchStore(
         es_client=async_es_client,
@@ -158,6 +168,7 @@ def search_knowledge_base(state: State) -> State:
         )
     # Finally query the engine with the user question
     response = query_engine.query(state["user_input"])
+    print(response)
     data_response = {
         "llm_response": response.response,
         "references": [node.to_dict() for node in response.source_nodes]
@@ -177,7 +188,7 @@ def print_stream(stream):
             message.pretty_print()
 
 def classify_node_output_router(state: State) -> Literal["sqlgen_node", "search_knowledge_base", "general_response_node"]:
-    match state["user_input"]:
+    match state["graph_output"]:
         case "search_knowledge_base":
             return "search_knowledge_base"
         case "query_database":
@@ -205,3 +216,28 @@ def query(user_input: str) -> str:
     graph = builder.compile(debug=True)
     print(graph.get_graph().draw_ascii())
     return graph.invoke({"user_input": user_input})
+
+
+def get_custom_watsonx(model_id, additional_kwargs):
+    # Serialize additional_kwargs to a JSON string, with sorted keys
+    additional_kwargs_str = json.dumps(additional_kwargs, sort_keys=True)
+    # Generate a hash of the serialized string
+    additional_kwargs_hash = hash(additional_kwargs_str)
+    
+    cache_key = f"{model_id}_{additional_kwargs_hash}"
+
+    # Check if the object already exists in the cache
+    if cache_key in custom_watsonx_cache:
+        return custom_watsonx_cache[cache_key]
+
+    # If not in the cache, create a new CustomWatsonX object and store it
+    custom_watsonx = CustomWatsonX(
+        credentials=wml_credentials,
+        project_id=os.environ.get("WX_PROJECT_ID"),
+        space_id=os.environ.get("SPACE_ID"),
+        model_id=model_id,
+        validate_model_id=False,
+        additional_kwargs=additional_kwargs,
+    )
+    custom_watsonx_cache[cache_key] = custom_watsonx
+    return custom_watsonx
