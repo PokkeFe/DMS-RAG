@@ -19,13 +19,10 @@ from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain.agents import AgentType, initialize_agent, AgentExecutor
 from langchain_community.agent_toolkits.load_tools import load_tools
-from langchain_community.tools import DuckDuckGoSearchResults
 
 from langchain_ibm import WatsonxLLM, ChatWatsonx
 
 from langchain_community.utilities import SQLDatabase
-
-import duckduckgo_search
 
 # langgraph
 from langgraph.graph import StateGraph, START, END
