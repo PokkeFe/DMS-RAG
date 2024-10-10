@@ -892,4 +892,4 @@ async def langchain_test(query: str):
 
 if __name__ == '__main__':
     if 'uvicorn' not in sys.argv[0]:
-        uvicorn.run("app:app", host='0.0.0.0', port=4050, reload=True)
+        uvicorn.run("app:app", host='0.0.0.0', port=4050, reload=False)
