@@ -40,6 +40,19 @@ from db2_loader import get_db2_database
 import json
 
 
+# ElasticSearch
+from elasticsearch import Elasticsearch, AsyncElasticsearch
+
+# Vector Store / WatsonX connection
+from llama_index.core import VectorStoreIndex, StorageContext, Settings
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.vector_stores.elasticsearch import ElasticsearchStore
+from llama_index.core.vector_stores.types import MetadataFilters, ExactMatchFilter, FilterOperator, MetadataFilter
+
+from utils import create_sparse_vector_query_with_model, create_sparse_vector_query_with_model_and_filter
+
+
+
 MODEL_ID = 'ibm/granite-13b-chat-v2'
 parameters = {  
     GenTextParamsMetaNames.DECODING_METHOD: "sample",  
@@ -60,6 +73,20 @@ params=parameters,
 key = os.environ.get("IBM_CLOUD_API_KEY")
 
 classify_prompt_template = PromptTemplate.from_file("promptClassify")
+general_prompt_template = PromptTemplate.from_file("promptGeneral")
+
+wxd_creds = {
+    "username": os.environ.get("WXD_USERNAME"),
+    "password": os.environ.get("WXD_PASSWORD"),
+    "wxdurl": os.environ.get("WXD_URL")
+}
+
+async_es_client = AsyncElasticsearch(
+    wxd_creds["wxdurl"],
+    basic_auth=(wxd_creds["username"], wxd_creds["password"]),
+    verify_certs=False,
+    request_timeout=3600,
+)
 
 # State definitions
 class State(TypedDict):
@@ -69,23 +96,77 @@ class State(TypedDict):
 class InputState(TypedDict):
     user_input: str
 
-def classify_node(state: State) -> State:
+class SQLGenState(TypedDict):
+    sql_query: str
 
+def classify_node(state: State) -> State:
     chain = classify_prompt_template | watsonx_llm | JsonOutputParser()
     response: dict = chain.invoke({"input": state["user_input"]})
     return {"graph_output": response["response_method"]}
 
-def sqlgen_node(state: State) -> State:
-    return {"graph_output": state["graph_output"]}
+def sqlgen_node(state: State) -> SQLGenState:
+    db = get_db2_database()
+    sql_chain = create_sql_query_chain(watsonx_llm, db)
+    response : str = sql_chain.invoke({"question", state["user_input"]})
+    return {"sql_query": response}
 
-def sqlexec_node(state: State) -> State:
-    return {"graph_output": state["graph_output"]}
+def sqlexec_node(state: SQLGenState) -> State:
+    db = get_db2_database()
+    result = db.run_no_throw(state["sql_query"])
+    return {"graph_output": str(result)}
 
 def search_knowledge_base(state: State) -> State:
-    return {"graph_output": state["graph_output"]}
+    question         = state["user_input"]
+    index_name       = ""
+    index_text_field = ""
+    es_model_name    = ""
+    model_text_field = ""
+    num_results      = 1
+    es_filters = None
+
+    vector_store = ElasticsearchStore(
+        es_client=async_es_client,
+        index_name=index_name,
+        text_field=index_text_field
+    )
+
+    
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+    if es_filters: 
+        filters = MetadataFilters(
+                filters=[
+                    MetadataFilter(key=k,operator=FilterOperator.EQ, value=v) for k, v in es_filters.items()
+            ]
+        )
+        
+        query_engine = index.as_query_engine(
+            #text_qa_template=prompt_template,
+            similarity_top_k=num_results,
+            vector_store_query_mode="sparse",
+            vector_store_kwargs={
+                "custom_query": create_sparse_vector_query_with_model_and_filter(es_model_name, model_text_field=model_text_field, filters=filters)
+            },
+        )
+    else:
+        query_engine = index.as_query_engine(
+            #text_qa_template=prompt_template,
+            similarity_top_k=num_results,
+            vector_store_query_mode="sparse",
+            vector_store_kwargs={
+                "custom_query": create_sparse_vector_query_with_model(es_model_name, model_text_field=model_text_field)
+            },
+        )
+    # Finally query the engine with the user question
+    response = query_engine.query(state["user_input"])
+    data_response = {
+        "llm_response": response.response,
+        "references": [node.to_dict() for node in response.source_nodes]
+    }
+    return {"graph_output": data_response["llm_response"]}
 
 def general_response_node(state: State) -> State:
-    return {"graph_output": state["graph_output"]}
+    chain = general_prompt_template | watsonx_llm | StrOutputParser()
+    return {"graph_output": chain.invoke({"input": state["user_input"]})}
 
 def print_stream(stream):
     for s in stream:
@@ -96,30 +177,14 @@ def print_stream(stream):
             message.pretty_print()
 
 def classify_node_output_router(state: State) -> Literal["sqlgen_node", "search_knowledge_base", "general_response_node"]:
-    return "search_knowledge_base"
+    match state["user_input"]:
+        case "search_knowledge_base":
+            return "search_knowledge_base"
+        case "query_database":
+            return "sqlgen_node"
+    return "general_response_node"
 
 def query(user_input: str) -> str:
-
-    # prompt_value = template.invoke({"topic": input})
-
-    # print("Stream")
-    # for chunk in watsonx_llm.stream(prompt_value):
-    #     print(chunk.content, end="")
-    # print()
-    # print("Stream End")
-
-    # llm_chain = template | watsonx_llm
-
-    # db = get_db2_database()
-    # sql_chain = create_sql_query_chain(watsonx_llm, db)
-
-    # response = sql_chain.invoke({
-    #     "question": q
-    #     })
-    
-    # print(response)
-
-    # return db.run(response)
 
     builder = StateGraph(State, input=InputState)
 
@@ -137,6 +202,6 @@ def query(user_input: str) -> str:
     builder.add_edge("search_knowledge_base", END)
     builder.add_edge("general_response_node", END)
 
-    graph = builder.compile()
+    graph = builder.compile(debug=True)
     print(graph.get_graph().draw_ascii())
     return graph.invoke({"user_input": user_input})
