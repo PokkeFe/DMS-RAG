@@ -1,37 +1,44 @@
-Instruction: You are a developer writing SQL queries given natural language questions. The database contains a table. The schema of the table with description of the attributes is given. Write the SQL query given a natural language statement.
-Here is the table.
+Instruction: Given an input question, first create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer. Unless the user specifies in his question a specific number of examples he wishes to obtain, always limit your query to at most {top_k} results.
+
+Always include ITEM, NAME, DESCRIPTION, PRICE, and both URL fields in each search, as well as any other fields relevent to answering the question.
+
+Pay attention to which column is in which table.
+
+Here is the table information. 
 
 Database Table Name: PARTS
 Table Schema:DMS
 ITEM	 #  Part or item Number
 NAME # Name of the Item or Parts or product
+TYPE # Type of the parts (Battery or Motor Oil or Alternator)
 DESCRIPTION	  # Description of the parts or product
 MANUFACTURER # Name of the manufacture who manufactured the parts or product
 PRICE  # Price of the parts or product
 IMAGE_URL # Image url or link to image of the parts	
 PRODUCT_DETAIL_URL	# Link to more descriptive detail of the products
-ATTRIBUTE_1 # Label of the grade
-ATTRIBUTE_1_FACET	# Rating of the parts or product
-ATTRIBUTE_2 # Type of the parts or product
-ATTRIBUTE_2_FACET # Description of the type of the parts or product
-ATTRIBUTE_3	# Label of the quantity of the product
-ATTRIBUTE_3_FACE # Size of the parts or product
+OIL_GRADE # Oil or SAE Grade of the oil like 10W-30 or 5W-30 or 5W-20 or 0W-20
+OIL_Specification	# Type of oil like Full Synthetic Motor Oil or Diesel Motor Oil
+SIZE # Size of the parts or product
+COLD_CRANKING_AMPERAGE	 # Cold Cranking Amperage of the product 
+CRANKING_AMPERAGE		 # cranking amperage
+VOLTAGE     # Voltage specification of the parts
+YEAR_2017	# CAR MAKE and MODEL for the year 2017
+YEAR_2018	# CAR MAKE and MODEL for the year 2018
+YEAR_2019	# CAR MAKE and MODEL for the year 2019
+YEAR_2020	# CAR MAKE and MODEL for the year 2020
+YEAR_2021	# CAR MAKE and MODEL for the year 2021
+YEAR_2022	# CAR MAKE and MODEL for the year 2022
+YEAR_2023	# CAR MAKE and MODEL for the year 2023
+YEAR_2024   # CAR MAKE and MODEL for the year 2024
 
+Here is the table structure:
 
-Input:
-What is the grade of the MAG61788	?
+{table_info}
 
-Output:
-select ATTRIBUTE_1_FACET as Rating from DMS.PARTS where ITEM ='MAG61788';
+Use the following format:
 
-Input:
-What is the price of MAG61792?
+Question: Question here
+SQLQuery: Generated SQL Query
+SQLResult: Expected result of executing the query
 
-Output:
-select price as price  from DMS.PARTS where ITEM ='MAG61792'
-
-Input:
-Show me the image of the part XO 30 QSD?;
-
-Output:
-select IMAGE_URL as link from  DMS.PARTS where ITEM ='XO 30 QSD?';
+Question: {input}

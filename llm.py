@@ -1,6 +1,8 @@
 import os
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Dict, Literal, Sequence, Union
+from sqlalchemy import Result
+from sqlalchemy.exc import SQLAlchemyError
 from typing_extensions import TypedDict
 
 # wx.ai
@@ -50,27 +52,28 @@ from utils import create_sparse_vector_query_with_model, create_sparse_vector_qu
 
 
 
-MODEL_ID = 'ibm/granite-13b-chat-v2'
-parameters = {  
+watsonx_llm_parameters = {  
     GenTextParamsMetaNames.DECODING_METHOD: "sample",  
     GenTextParamsMetaNames.MAX_NEW_TOKENS: 100,  
     GenTextParamsMetaNames.MIN_NEW_TOKENS: 1,  
     GenTextParamsMetaNames.TEMPERATURE: 0.5,  
     GenTextParamsMetaNames.TOP_K: 50,  
-    GenTextParamsMetaNames.TOP_P: 1,
-    GenTextParamsMetaNames.STOP_SEQUENCES: ["\n"]
+    GenTextParamsMetaNames.TOP_P: 1
 }   
 watsonx_llm = WatsonxLLM(  
-model_id="meta-llama/llama-3-2-90b-vision-instruct",  
-url= "https://us-south.ml.cloud.ibm.com",  
-apikey= os.environ.get("IBM_CLOUD_API_KEY"), 
-project_id=os.environ.get("WX_PROJECT_ID"),  
-params=parameters,  
+    model_id="meta-llama/llama-3-2-90b-vision-instruct",  
+    url= "https://us-south.ml.cloud.ibm.com",  
+    apikey= os.environ.get("IBM_CLOUD_API_KEY"), 
+    project_id=os.environ.get("WX_PROJECT_ID"),  
+    params=watsonx_llm_parameters,  
 )
+
 key = os.environ.get("IBM_CLOUD_API_KEY")
 
 classify_prompt_template = PromptTemplate.from_file("promptClassify")
 general_prompt_template = PromptTemplate.from_file("promptGeneral")
+sqlgen_prompt_template = PromptTemplate.from_file("promptSQL")
+sqlanalysis_prompt_template = PromptTemplate.from_file("promptSQLAnalysis")
 
 wxd_creds = {
     "username": os.environ.get("WXD_USERNAME"),
@@ -93,6 +96,8 @@ async_es_client = AsyncElasticsearch(
 # Create a watsonx client cache for faster calls.
 custom_watsonx_cache = {}
 
+db = get_db2_database()
+
 # State definitions
 class State(TypedDict):
     user_input: str
@@ -104,21 +109,40 @@ class InputState(TypedDict):
 class SQLGenState(TypedDict):
     sql_query: str
 
+class SQLExecState(TypedDict):
+    sql_query: str
+    query_output: str
+    user_input: str
+
 def classify_node(state: State) -> State:
-    chain = classify_prompt_template | watsonx_llm | JsonOutputParser()
+    chain = classify_prompt_template | watsonx_llm.bind(stop=["\n"]) | JsonOutputParser()
     response: dict = chain.invoke({"input": state["user_input"]})
     return {"graph_output": response["response_method"]}
 
 def sqlgen_node(state: State) -> SQLGenState:
-    db = get_db2_database()
-    sql_chain = create_sql_query_chain(watsonx_llm, db)
-    response : str = sql_chain.invoke({"question", state["user_input"]})
+    sql_chain = create_sql_query_chain(watsonx_llm, db, prompt=sqlgen_prompt_template, k=5)
+    print(sql_chain.get_graph().draw_ascii())
+    print(db.get_table_info())
+    print("Sql Chain Prompts:")
+    print(sql_chain.get_prompts())
+    user_input : str = state["user_input"]
+    response : str = sql_chain.invoke({"question": user_input})
     return {"sql_query": response}
 
-def sqlexec_node(state: SQLGenState) -> State:
-    db = get_db2_database()
-    result = db.run_no_throw(state["sql_query"])
-    return {"graph_output": str(result)}
+def sqlexec_node(state: SQLGenState) -> SQLExecState:
+    try:
+        result = db.run(state["sql_query"], include_columns=True)
+    except SQLAlchemyError as e:
+        result = f"Error - {e}"
+
+    return {"query_output": result}
+
+def sqlanalysis_node(state: SQLExecState) -> State:
+    state["query_output"]
+
+    chain = sqlanalysis_prompt_template | watsonx_llm | StrOutputParser()
+
+    return {"graph_output": chain.invoke({"query_output": state["query_output"], "user_input": state["user_input"], "sql_query": state["sql_query"]})}
 
 def search_knowledge_base(state: State) -> State:
     index_name       = "search-rag-llm-index"
@@ -201,12 +225,14 @@ def query(user_input: str) -> str:
     builder.add_node("sqlgen_node", sqlgen_node)
     builder.add_node("sqlexec_node", sqlexec_node)
     builder.add_node("general_response_node", general_response_node)
+    builder.add_node("sqlanalysis_node", sqlanalysis_node)
 
     builder.add_edge(START, "classify_node")
     builder.add_conditional_edges("classify_node", classify_node_output_router)
 
     builder.add_edge("sqlgen_node", "sqlexec_node")
-    builder.add_edge("sqlexec_node", END)
+    builder.add_edge("sqlexec_node", "sqlanalysis_node")
+    builder.add_edge("sqlanalysis_node", END)
     builder.add_edge("search_knowledge_base", END)
     builder.add_edge("general_response_node", END)
 
