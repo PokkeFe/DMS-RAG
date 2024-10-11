@@ -98,3 +98,5 @@ langchain-community
 langchain-ibm
 langgraph
 grandalf
+ibm_db
+ibm_db_sa
