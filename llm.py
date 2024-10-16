@@ -53,8 +53,8 @@ from utils import create_sparse_vector_query_with_model, create_sparse_vector_qu
 
 
 watsonx_llm_parameters = {  
-    GenTextParamsMetaNames.DECODING_METHOD: "sample",  
-    GenTextParamsMetaNames.MAX_NEW_TOKENS: 100,  
+    GenTextParamsMetaNames.DECODING_METHOD: "sample",
+    GenTextParamsMetaNames.MAX_NEW_TOKENS: 350,
     GenTextParamsMetaNames.MIN_NEW_TOKENS: 1,  
     GenTextParamsMetaNames.TEMPERATURE: 0.5,  
     GenTextParamsMetaNames.TOP_K: 50,  
@@ -127,6 +127,11 @@ def sqlgen_node(state: State) -> SQLGenState:
     print(sql_chain.get_prompts())
     user_input : str = state["user_input"]
     response : str = sql_chain.invoke({"question": user_input})
+    select_location = response.find("SELECT")
+    if select_location != -1:
+        response = response[select_location:]
+    else:
+        response = ""
     return {"sql_query": response}
 
 def sqlexec_node(state: SQLGenState) -> SQLExecState:
