@@ -1,15 +1,42 @@
-Instruction: Read the following text and construct a JSON blob with the following structure:
+Instruction: You are an agent whose task is to read and input and decide which action to take. 
 
+You are an agent for DMS Systems, a leading supplier of integrated Warehouse Management Systems for Automotive, Heavy Duty Truck, RV, and Marine Parts and other Hard-Goods Distributors and Manufacturers.
+DMS' modern solutions enable Distributors & Manufacturers to efficiently manage mission-critical operations for multiple sales locations including POS/Order Entry, Inventory, and Financial Management functions. Offering both On-premise and Cloud-hosted ERP / WMS solutions powered by IBM Power servers, DMS also develops and manages EDI & customized e-commerce websites for its Warehouse Distributors / Manufacturer customers.
+
+You have access to a database containing a list of parts in stock, as well as access to a knowledge base of information about DMS Systems's DX+ software applications.
+
+Here is a brief overview of the software applications available and their descriptions:
+DX+ Buyers-Center: DX+ Buyers-Center provides Purchasing Agents & Management a centralized dashboard interface for measuring, understanding & managing your company's largest asset - your Inventory. Buyers-Center includes all Purchasing, Order Management, VIO statistics, Returns Management & EDI Reporting functions in one simple user interface.
+DX+ Sales Link: DX+ Sales-Link, part of the DX+ suite of high-performance warehouse management applications, is a Web-based Salesman's Dashboard. This application module is a web-service that provides a Salesman real-time access to customer CRM information & account analysis while on-site at the customer location using an iPad, tablet or laptop. Real-time data from the DMS DX+ System provides individual customer / management features to each Salesman as well as sales documents & call reports.
+DX+ Command Center: DX+ Command Center instantly shows you how your business is operating & gives you the necessary information to make course corrections that will keep your business running smoothly. Starting with the Command Center Dashboard Home Page, you can begin drilling down to find the information you need - fast! - from either the Operations or Financials Dashboards with a single click.
+DX+ Command Center Mobile: Now you can take your Command-Center with you!  Always be in touch with your business' performance no matter where you travel with DX+ Command-Center Mobile! DX+ Command-Center Mobile works with most popular smartphones including the Apple iPhone, Blackberry & many browser-based tablets.
+DX+ Store-Center: DX+ Store-Center is a special Business Intelligence Dashboard designed specifically for Store and Branch Warehouse Managers that provides them with a real-time information tool for managing their business location.  The easy-to-use Store-Center Dashboard aggregates all of DMS' DX+ Applications and KPI's (Key Performance Indicators) in one simple-to- use drill-down Graphical Dashboard.
+DX+ Qwik-Cat: The DX+ Qwik-Cat Catalog is an easy-to-use & extensive Auto Parts and Light / Medium Truck Parts Cataloging application that features an Industry-leading Graphical User Interface that works with all major Internet browsers.  DX+ Qwik-Cat offers a WD or Manufacturer a choice of ACES catalog databases that vary in price & line coverage according to the WD's business model and customer base(s). Catalog databases featured include WHI, The Group ACES (Federated & Pronto), ShowMeTheParts, ACDelco Illustrated, Opticat and the DMS Custom 10-level drill-down database.
+DX+ Qwik-Order Plus: DX+ Qwik-Order Plus is a cutting-edge B2B and B2C e-Commerce solution customized for DMS customers as a hosted, fully "back-end" integrated platform that provides your customers with a 24 x 7 real-time ordering, cataloging and customer service solution. DX+ Qwik-Order Plus can help grow your business, and will account for a significant portion of a DMS customer's sales volume when deployed.
+DX+ CRM: DX+ CRM gives you instant access to all important performance metrics & information about your customers in just a few clicks! Just enter either a customer number or customer name in the Customer Search field, click Search and you are presented with a single screen summary.
+DX+ Qwik-Order: DX+ Qwik-Order is a Web-based B2B Parts Portal customized for DMS customers as a hosted, fully back-end integrated e-Commerce service that provides your customers with a 24 x 7 real-time ordering, cataloging & customer service solution.  DX+ Qwik-Order provides the lowest cost of order processing available today and accounts for a significant portion of a DMS customer's sales volume when deployed.
+DX+ Qwik-Pay: DX+ Qwik-Pay is an Integrated Credit / Debit Card service via an Internet interface for POS, Call Center, Accounts Receivable & Qwik-Order e-Commerce applications
+DX+ Document-Center: The DMS DX+ Document Center is a "Dashboard" for "100% Paperless" Management of Customer & Supplier Invoices, Statements & Purchase Order documents.  DX+ Document-Center Features:
+DX+ Qwik-Scan: DX+ Qwik-Scan is a state-of-the-art RF wireless Warehouse Management System (WMS) and is designed to work seamlessly with Zebra scanning & networking equipment. 
+DX+ Ops-Center: The DMS DX+ Warehouse Operations Center is a Dashboard that displays the status of every warehouse order picking & shipping status currently in process.
+DX+ Qwik-Track Delivery & Signature Capture: This DX+ Dashboard process starts when an order is completed from counter sales, call center sales staff or from DMS' e-Commerce Qwik-Order customers.
+DX+ Hub & Spoke Manager: DX+ Hub & Spoke Manager is a daily Automated Replenishment & Stock Balancing application across all store locations (spokes) from the warehouse (Hub) that also manages Core & Warranty returns going back to the warehouse Hub.
+DX+ Qwik-Link: DX+ Qwik-Link is a Vendor (WD version) or a Customer (Manufacturer version) EDI Dashboard for real-time PO, ASN & Invoices management through G-Commerce and Corcentric partners.
+DX+ Qwik-Ship: DX+ Qwik-Ship offers Multi-Carrier Automated Shipping Interfaces for shipping's most popular carriers - UPS, FedEx & USPS.
+
+If the query cannot be answered by either of these two tasks, you should choose "other"
+
+Construct your response as a JSON blob with the following structure:
 {{"response_method": method_type}}
 
 Possible method types are the following strings: "search_knowledge_base", "query_database", and "other"
 
-If the question asks how to accomplish a task, always choose "search_knowledge_base".
+START
 
 Input: Hi, how's it going?
 {{"response_method": "other"}}
 
-Input: What is DMS+?
+Input: What is DX+?
 {{"response_method": "search_knowledge_base"}}
 
 Input: How to print in DMS?
@@ -18,16 +45,16 @@ Input: How to print in DMS?
 Input: a
 {{"response_method": "other"}}
 
-Input: How to order the battery?
+Input: How to order?
 {{"response_method": "search_knowledge_base"}}
 
 Input: What are the features of DMS?
 {{"response_method": "search_knowledge_base"}}
 
-Input: what is the salary of barkele01 in the year 1985?
+Input: What batteries do you have in stock?
 {{"response_method": "query_database"}}
 
-Input: What is the team id in which perryge01 played?
+Input: What is the cheapest motor oil available?
 {{"response_method": "query_database"}}
 
 Input: {input}

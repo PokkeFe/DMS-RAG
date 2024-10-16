@@ -1,6 +1,6 @@
 Instruction: Given an input question, first create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer. Unless the user specifies in his question a specific number of examples he wishes to obtain, always limit your query to at most {top_k} results.
 
-Always include ITEM, NAME, DESCRIPTION, PRICE, and both URL fields in each search, as well as any other fields relevent to answering the question.
+Always include ITEM, NAME, DESCRIPTION, PRICE, and both URL fields in each search, as well as any other fields relevent to answering the question. The SQL query should all be on a single line with no markdown formatting.
 
 Pay attention to which column is in which table.
 
