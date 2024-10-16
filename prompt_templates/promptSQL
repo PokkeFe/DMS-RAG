@@ -1,0 +1,76 @@
+Instruction: You are a developer writing SQL queries given natural language questions. The database contains a table. Don't use concat. The schema of the table with description of the attributes is given. Write the SQL query given a natural language statement.
+Here is the table. 
+
+Database Table Name: PARTS
+Table Schema:DMS
+ITEM	 #  Part or item Number
+NAME # Name of the Item or Parts or product
+TYPE # Type of the parts (Battery or Motor Oil or Alternator)
+DESCRIPTION	  # Description of the parts or product
+MANUFACTURER # Name of the manufacture who manufactured the parts or product
+PRICE  # Price of the parts or product
+IMAGE_URL # Image url or link to image of the parts	
+PRODUCT_DETAIL_URL	# Link to more descriptive detail of the products
+OIL_GRADE # Oil or SAE Grade of the oil like 10W-30 or 5W-30 or 5W-20 or 0W-20
+OIL_Specification	# Type of oil like Full Synthetic Motor Oil or Diesel Motor Oil
+SIZE # Size of the parts or product
+COLD_CRANKING_AMPERAGE	 # Cold Cranking Amperage of the product 
+CRANKING_AMPERAGE		# cranking amperage
+VOLTAGE # Voltage specification of the parts
+YEAR_2017	# CAR MAKE and MODEL for the year 2017
+YEAR_2018	# CAR MAKE and MODEL for the year 2018
+YEAR_2019	# CAR MAKE and MODEL for the year 2019
+YEAR_2020	# CAR MAKE and MODEL for the year 2020
+YEAR_2021	# CAR MAKE and MODEL for the year 2021
+YEAR_2022	# CAR MAKE and MODEL for the year 2022
+YEAR_2023	# CAR MAKE and MODEL for the year 2023
+YEAR_2024# CAR MAKE and MODEL for the year 2024
+
+
+Input:
+What is the grade of the MAG61788	?
+
+Output:
+select SAE_GRADE as Rating from DMS.PARTS where ITEM ='MAG61788';
+
+Input:
+For what 2019  models can I use the oil 48AGM ?
+
+Output:
+select Year_2019 as Cars  from DMS.PARTS where ITEM ='48AGM';
+
+Input:
+Which item is suitable for 2020 Audi Q8 ?
+
+Output:
+select item  from DMS.PARTS where  YEAR_2020 like 'Audi Q8%';
+
+Input:
+list the parts and links suitable for Cadillac CT4?
+
+Output
+select ITEM as parts, PRODUCT_DETAIL_URL as Links from DMS.PARTS where (YEAR_2017 like '%Cadillac CT4%') or (YEAR_2018  like '%Cadillac CT4%') or (YEAR_2019  like '%Cadillac CT4%') or  (YEAR_2020 like '%Cadillac CT4%') or   (YEAR_2021 like '%Cadillac CT4%') or  (YEAR_2022 like '%Cadillac CT4%') or   (YEAR_2023 like '%Cadillac CT4%') or  (YEAR_2024  like '%Cadillac CT4%');
+
+Input:
+Do you have a battery for a 2019 Silverado?;
+
+Output:
+select ITEM as Battery from DMS.PARTS where YEAR_2019 like '%Silverado%' and TYPE = 'Battery';
+
+Input:
+Do you have a alternator for a 2019 Silverado?
+Output:
+select ITEM as Alternator from DMS.PARTS where YEAR_2019 like '%Silverado%' and TYPE = 'Alternator';
+
+Input:
+Do you have 10W-30 motor oil?;
+
+Output:
+select ITEM as parts, NAME as Name from  DMS.PARTS where OIL_GRADE = '10W-30' and TYPE ='Motor Oil';
+
+Input:
+What all models does the item 48AGM supports?
+
+Output:
+select YEAR_2017,  YEAR_2018,  YEAR_2019,  YEAR_2020,  YEAR_2021, YEAR_2022, YEAR_2023, YEAR_2024 from DMS.PARTS where  item = '48AGM';
+

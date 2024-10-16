@@ -1,0 +1,22 @@
+Instruction:Read the following text and assign a classification label as one of the following - rag, Text2SQL. If the question starts with How always set output label - rag
+
+Input: What is DMS+?
+Output: label: rag
+
+Input: How to print in DMS?
+Output: label: rag
+
+Input: How to order the battery?
+Output: label: rag
+
+Input: What are the features of DMS?
+Output: label: rag
+
+Input: Do you have 10W-30 motor oil??
+Output: label: Text2SQL
+
+Input: Which batteries fit a 2020 Chevrolet Silverado 1500?  
+Output: label: Text2SQL
+
+Input: What grade oil do you have for Chevrolet?
+Output label: Text2SQL

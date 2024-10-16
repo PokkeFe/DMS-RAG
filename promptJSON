@@ -1,8 +1,0 @@
-Instruction: Generate a natural language statement from the given data.
-
-Input:{YEAR:1985,TEAM_ID:ATL,PLAYER_ID:barkele01}
-Output: Player barkele01 played in team ATL in the year 1985
-
-Input:{Salary:550000,player_id:barkele01,league_id:NL}
-Output: Player barkele01 received a salary of  550000 in the league NL
-

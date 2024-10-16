@@ -1,0 +1,16 @@
+Instruction: Generate a natural language statement from the given input. Ignore responding with the word Output in response. Always answer with we instead of I. Just respond with the answer don't respond with example or ask any further questions. 
+
+Input:Do you have a battery for a 2018 Silverado 3500 HD? Output:  
+Output: Sorry we don't have the battery for 2018 Silverado 3500 HD.
+
+Input:Do you have 10W-30 motor oil?, Output: {ITEM:MAG61788,NAME:10W30 Full Synthetic Motor Oil}{ITEM:XO 30 QSD,NAME:10W30 Diesel Motor Oil}
+Output: Yes we have the MAG61788 and XO 30 QSD motor oil
+
+Input:Which batteries fit a 2020 Chevrolet Silverado 1500?, Output: {ITEM:94RAGM}
+Output: The battery 94RAGM fits a 2020 Chevrolet Silverado 1500.
+
+Input:Which alternator fit a 2020 Chevrolet Silverado 1500? Output: {ITEM:94RAGM}
+Output: The alternator 94RAGM fits a 2020 Chevrolet Silverado 1500.
+
+
+

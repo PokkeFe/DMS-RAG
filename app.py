@@ -53,6 +53,8 @@ from customTypes.texttosqlResponse import texttosqlResponse
 
 from customTypes.watsonchatRequest import LLMParams,Parameters,Moderations
 
+from prompt_grabber import update_prompt_templates
+
 app = FastAPI()
 
 app.openapi_version = "3.0.2"
@@ -77,6 +79,9 @@ api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 ibm_cloud_api_key = os.environ.get("IBM_CLOUD_API_KEY")
 project_id = os.environ.get("WX_PROJECT_ID")
 space_id = os.environ.get("SPACE_ID")
+
+# Prompt templates
+prompt_templates = ["promptGeneral", "promptClassify", "promptSQL", "promptJSON"]
 
 # wxd creds
 wxd_creds = {
@@ -132,7 +137,6 @@ mdb_creds = {
     "db_schema": os.environ.get("MDB_SCHEMA"),
     "tls_location": os.environ.get("MDB_TLS_LOCATION")
 }
-
 
 
 # Create a global client connection to elastic search
@@ -738,34 +742,19 @@ async def watsonchat(request: watsonchatRequest, api_key: str = Security(get_api
 
 
 def get_latest_prompt_template(promptType):
-    prompt_mgr = PromptTemplateManager(
-        credentials={
-            "apikey": os.environ.get("IBM_CLOUD_API_KEY"),
-            "url": os.environ.get("WX_URL"),
-        },
-        space_id=os.environ.get("WX_SPACE_ID")
-    )
     
-    df_prompts = prompt_mgr.list()
+    loaded_prompt_template_string = ""
 
-    df_prompts = df_prompts.assign(
-            NAME=df_prompts['NAME'].astype(str),
-            LAST_MODIFIED=pd.to_datetime(df_prompts['LAST MODIFIED'])
-        )
+    try:
+        with open(f"prompt_templates/{promptType}", "r") as prompt_file:
+            loaded_prompt_template_string = prompt_file.read()
+    except FileNotFoundError:
+        print(f"Failed to get local prompt file {promptType}: FileNotFound")
+    except PermissionError:
+        print(f"Failed to get local prompt file {promptType}: Invalid Permissions")
+    except:
+        print(f"Failed to get local prompt file {promptType}: Unknown Error")
 
-    filtered_df = df_prompts[df_prompts['NAME'] == promptType]
-
-    if filtered_df.empty:
-        raise ValueError(f"Prompt file does not exist for NAME = {promptType}")
-
-    # Find the latest record and prompt id based on 'LAST MODIFIED'
-    latest_index = filtered_df['LAST MODIFIED'].idxmax()
-    latest_record = filtered_df.loc[latest_index]
-
-    latest_prompt_id = latest_record['ID']
-
-    # Load the prompt template using the latest ID and format type as string
-    loaded_prompt_template_string = prompt_mgr.load_prompt(latest_prompt_id, PromptTemplateFormats.STRING)
     
     return loaded_prompt_template_string
 
@@ -885,5 +874,6 @@ def watsonx(input, promptType, llm_params):
     return response
 
 if __name__ == '__main__':
+    update_prompt_templates(prompt_templates)
     if 'uvicorn' not in sys.argv[0]:
         uvicorn.run("app:app", host='0.0.0.0', port=4050, reload=True)
