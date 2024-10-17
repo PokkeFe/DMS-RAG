@@ -35,7 +35,13 @@ def get_latest_prompt_template(promptType):
     
     return loaded_prompt_template_string
 
-def update_prompt_templates(prompt_types):
+def update_prompt_templates(prompt_types): 
     for prompt_type in prompt_types:
-        with open(f"prompt_templates/{prompt_type}", "w") as f:
-            f.write(get_latest_prompt_template(prompt_type))
+        try:
+            latest_template = get_latest_prompt_template(prompt_type)
+            with open(f"prompt_templates/{prompt_type}", "w") as f:
+                f.write(latest_template)
+        except ValueError:
+            print(f"Couldn't load latest file for {prompt_type}: File Not found.")
+        except:
+            print(f"Unknown error loading file {prompt_type}")

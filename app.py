@@ -745,6 +745,8 @@ def get_latest_prompt_template(promptType):
     
     loaded_prompt_template_string = ""
 
+    print(f"Requesting prompt template {promptType}")
+
     try:
         with open(f"prompt_templates/{promptType}", "r") as prompt_file:
             loaded_prompt_template_string = prompt_file.read()
@@ -755,7 +757,8 @@ def get_latest_prompt_template(promptType):
     except:
         print(f"Failed to get local prompt file {promptType}: Unknown Error")
 
-    
+    print(f"Loaded prompt:\n{loaded_prompt_template_string}")
+
     return loaded_prompt_template_string
 
 
