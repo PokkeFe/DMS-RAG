@@ -81,7 +81,7 @@ project_id = os.environ.get("WX_PROJECT_ID")
 space_id = os.environ.get("SPACE_ID")
 
 # Prompt templates
-prompt_templates = ["promptGeneral", "promptClassify", "promptSQL", "promptJSON"]
+prompt_templates = ["promptGeneral", "promptClassify", "promptSQL", "promptJSON", "promptRAG"]
 
 # wxd creds
 wxd_creds = {

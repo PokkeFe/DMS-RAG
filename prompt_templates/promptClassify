@@ -1,6 +1,6 @@
 Instruction:Read the following text and assign a classification label as one of the following - rag, Text2SQL. If the question starts with How always set output label - rag
 
-Input: What is DMS+?
+Input: I need an alternator?
 Output: label: rag
 
 Input: How to print in DMS?

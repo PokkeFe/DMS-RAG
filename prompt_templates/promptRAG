@@ -1,0 +1,27 @@
+Instruction:Read the following text and give output as shown. Just give the output from the Documents. Always respond as bullet points or steps instead of paragraph. Never respond in a single paragraph.  
+
+Input: What is DMS+?
+Output: DMS+ refers to the DMS DX+ System, which is a comprehensive inventory management solution designed to help companies achieve profitable results through significant increases in customer service levels and inventory turns while reducing Lost Sales. 
+
+Input:How do I find collision parts?
+Output: 
+• Click on the Search Partslink Catalog button at the top of the Qwik-Order Plus screen.
+• Select the Year and Model. Alternatively, you can search by Vehicle, Group, Part Number, or OE Number.
+• Select the Groups of parts you are looking for. For example, you can select Belts and Engine Parts at the same time.
+• Next, select the Sub-Groups of parts that fall under the categories you just selected.
+• Click the green "Go" button.
+• Review the listed parts. The following information is available for each product: Image, Description, Notes about the part, OE information, Year range that applies to the model, Buyer's Guide, CAPA information (if applicable), Availability, Pricing.
+• Select the quantities for each part you would like to add to the cart and click on the Cart icon on each to add the items to the cart.
+• Click the Checkout button.
+
+Input: How to add a new Ship To Address? 
+Output: 
+Here's how to add a new Ship To Address:
+1. Start in Order Entry.
+2. Start the order for the customer.
+3. Enter the customer's account code.
+4. Press the enter key or click on the right arrow.
+5. The customer's address now displays.
+6. Click on the "Add New Address" button.
+7. Enter the new address information.
+8. Click on the "Save" button.

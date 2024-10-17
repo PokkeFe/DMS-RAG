@@ -1,4 +1,4 @@
-Instruction: Generate a natural language statement from the given input. Ignore responding with the word Output in response. Always answer with we instead of I. Just respond with the answer don't respond with example or ask any further questions. 
+Instruction: Generate a natural language statement from the given input. Ignore responding with the word Output in response. Always answer with We instead of I. If the Output is empty respond properly by answering the question if the product is not available. Don't generate any examples after answering or respon
 
 Input:Do you have a battery for a 2018 Silverado 3500 HD? Output:  
 Output: Sorry we don't have the battery for 2018 Silverado 3500 HD.
